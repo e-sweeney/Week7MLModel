@@ -4,15 +4,17 @@ from pandas import read_csv
 from joblib import dump
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-
+import pickle
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score, mean_squared_error
 
 mlflow.set_tracking_uri("http://localhost:5555")
 
-workspace = os.getenv('GITHUB_WORKSPACE')
+#workspace = os.getenv('GITHUB_WORKSPACE')
 
 # Define the directory where your Python script is located (ModelCleaning)
-model_cleaning_dir = os.path.join(workspace, 'ModelCleaning')
-
+#model_cleaning_dir = os.path.join(workspace, 'ModelCleaning')
+model_cleaning_dir = ('/opt/mlflow/Week7MLModel/ModelCleaning')
 
 # Define the full path to the cleaned data CSV file
 csv_file_path = os.path.join(model_cleaning_dir, 'cleaned_data.csv')
@@ -31,12 +33,12 @@ print(df.head())
 
 
 
-
-X= df["Age"].values.reshape(10,1)
+X= df[["Age"]]
 y= df["Salary"]
+print(df["Age"].isna().sum())
+print(df["Salary"].isna().sum())
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
 
 with mlflow.start_run():
 
@@ -44,7 +46,7 @@ with mlflow.start_run():
     mind = LinearRegression()
     mind.fit(X_train,  y_train)
     #Evaluate
-    predictions= model.predict(X_test)
+    predictions= mind.predict(X_test)
     r2 = r2_score(y_test, predictions)
     mse = mean_squared_error(y_test, predictions)
     
@@ -55,7 +57,7 @@ with mlflow.start_run():
 
     #Log Model & Register
 
-    result = mlflow.sklean.log_model(sk_model=mind, artifact_path="model")
+    result = mlflow.sklearn.log_model(sk_model=mind, artifact_path="model")
 
     mlflow.register_model(
             model_uri=result.model_uri,

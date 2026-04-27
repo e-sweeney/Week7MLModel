@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+import numpy as np
+
 
 # Load CSV file
 df = pd.read_csv('data.csv')
@@ -11,22 +13,34 @@ print(df.head())
 # Strip whitespace from column names
 df.columns = df.columns.str.strip()
 
-# Remove leading/trailing whitespace from string values
-df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
+# Strip + lowercase ONLY string columns safely
+for col in df.select_dtypes(include="object"):
+    df[col] = df[col].str.strip().str.lower()
+
+# Convert Age and Salary to numeric (forces bad values → NaN)
+df["Age"] = pd.to_numeric(df["Age"], errors="coerce")
+df["Salary"] = pd.to_numeric(df["Salary"], errors="coerce")
+
+# Replace infinities just in case
+df.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+# NOW drop missing values
+df.dropna(inplace=True)
 
 # Convert string columns to lowercase
 df = df.map(lambda x: x.lower() if isinstance(x, str) else x)
 
-# Drop rows with any missing values
-df.dropna(inplace=True)
 
 # Drop duplicate rows
 df.drop_duplicates(inplace=True)
 
-workspace = os.getenv('GITHUB_WORKSPACE')
+#workspace = os.getenv('GITHUB_WORKSPACE')
 
 # Define the directory where your Python script is located (ModelCleaning)
-model_cleaning_dir = os.path.join(workspace, 'ModelCleaning')
+#model_cleaning_dir = os.path.join(workspace, 'ModelCleaning')
+
+model_cleaning_dir = ('/opt/mlflow/Week7MLModel/ModelCleaning')
+
 
 # Define the full path for the output file
 output_path = os.path.join(model_cleaning_dir, 'cleaned_data.csv')
