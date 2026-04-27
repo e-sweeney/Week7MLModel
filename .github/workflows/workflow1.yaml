@@ -28,7 +28,7 @@ jobs:
         pip install pandas
         python Cleandata.py
     - name: train_model
-      runs: |
+      run: |
         pip install scikit-learn joblib
         python ModelCleaning/train_test.py
        
