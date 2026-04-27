@@ -12,4 +12,23 @@ jobs:
     - run: |
         echo ${{ github.workspace }}
         echo $GITHUB_WORKSPACE
-        
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v6
+      with:
+          python-version: '3.12'
+    - name: Confirm Python version
+      run: 
+        python --version
+    
+    - name: clean-data
+      run: |
+        cd ModelCleaning
+        ls -al
+        pip install pandas
+        python Cleandata.py
+    - name: train_model
+      runs: |
+        pip install scikit-learn joblib
+        python ModelCleaning/train_test.py
+       
